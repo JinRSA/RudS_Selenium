@@ -1,56 +1,73 @@
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
-        String path2ChromeDriver = "C:\\My\\Projects\\Java\\Libraries\\chromedriver.exe";
-        System.setProperty("webdriver.chrome.driver", path2ChromeDriver);
-
+        try (InputStream input = new FileInputStream("src/main/resources/resources.properties")) {
+            Properties properties = new Properties();
+            properties.load(input);
+            String path2ChromeDriver = properties.getProperty("path2ChromeDriver");
+            System.out.println("Путь к драйверу: \"" + path2ChromeDriver + "\"\n");
+            System.setProperty("webdriver.chrome.driver", path2ChromeDriver);
+        } catch (Exception ignored) {}
         WebDriver driver = new ChromeDriver();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-//        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-//        driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);
         // 1.
         driver.get("https://avito.ru");
         driver.manage().window().maximize();
         // 2.
-        Select categoryDropDownList = new Select(driver.findElement(By.id("category")));
-        //categoryDropDownList.getOptions().forEach(opt -> System.out.println(opt.getAttribute("value") + "\t" + opt.getText()));
-        categoryDropDownList.selectByVisibleText("Оргтехника и расходники");
+        By by = By.id("category");
+        Select categoryDropDownList = new Select(driver.findElement(by));
+        String visibleText = "Оргтехника и расходники";
+        categoryDropDownList.selectByVisibleText(visibleText);
         // 3.
-        WebElement search = driver.findElement(By.xpath("//input[@data-marker=\"search-form/suggest\"]"));
-        search.sendKeys("Принтер");
+        by = By.xpath("//input[@data-marker=\"search-form/suggest\"]");
+        WebElement search = driver.findElement(by);
+        String searchStr = "Принтер";
+        search.sendKeys(searchStr);
         // 4.
-        driver.findElement(By.xpath("//div[@data-marker=\"search-form/region\"]")).click();
+        by = By.xpath("//div[@data-marker=\"search-form/region\"]");
+        driver.findElement(by).click();
         // 5.
-        WebElement searchCity = driver.findElement(By.xpath("//input[@data-marker=\"popup-location/region/input\"]"));
-        searchCity.sendKeys("Владивосток");
-//        (new WebDriverWait(driver, 5)).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//strong[\"Владивосток\"]")));//.click();
-        WebElement city = driver.findElement(By.xpath("//strong[text()=\"Владивосток\"]"));
+        by = By.xpath("//input[@data-marker=\"popup-location/region/input\"]");
+        WebElement searchCity = driver.findElement(by);
+        String searchCityStr = "Владивосток";
+        searchCity.sendKeys(searchCityStr);
+        by = By.xpath("//strong[text()=\"Владивосток\"]");
+        WebElement city = driver.findElement(by);
         city.click();
-        driver.findElement(By.xpath("//button[@data-marker=\"popup-location/save-button\"]")).click();
+        by = By.xpath("//button[@data-marker=\"popup-location/save-button\"]");
+        driver.findElement(by).click();
         // 6.
-        WebElement checkBox = driver.findElement(By.xpath("//input[@data-marker=\"delivery-filter/input\"]"));
+        by = By.xpath("//input[@data-marker=\"delivery-filter/input\"]");
+        WebElement checkBox = driver.findElement(by);
         if (!checkBox.isSelected())
             checkBox.sendKeys(Keys.SPACE);
-        driver.findElement(By.xpath("//button[@data-marker=\"search-filters/submit-button\"]")).click();
+        by = By.xpath("//button[@data-marker=\"search-filters/submit-button\"]");
+        driver.findElement(by).click();
         // 7.
-        Select filterByDropDownList = new Select(driver.findElement(By.xpath("//select[option[./text()=\"По умолчанию\"]]")));
-        filterByDropDownList.selectByVisibleText("Дороже");
+        by = By.xpath("//select[option[./text()=\"По умолчанию\"]]");
+        Select filterByDropDownList = new Select(driver.findElement(by));
+        visibleText = "Дороже";
+        filterByDropDownList.selectByVisibleText(visibleText);
         // 8.
-        List<WebElement> resultsName = driver.findElements(By.xpath("//h3[@itemprop=\"name\"]"));
-        List<WebElement> resultsPrice = driver.findElements(By.xpath("//span[@data-marker=\"item-price\"]"));
-        for (int i = 0; i < 3; ++i) {
+        by = By.xpath("//h3[@itemprop=\"name\"]");
+        List<WebElement> resultsName = driver.findElements(by);
+        by = By.xpath("//span[@data-marker=\"item-price\"]");
+        List<WebElement> resultsPrice = driver.findElements(by);
+        for (int i = 0; i < 3; ++i)
             System.out.println("Наименование: " + resultsName.get(i).getText() + "\nЦена: " + resultsPrice.get(i).getText());
-        }
 
-//        driver.close();
         driver.quit();
     }
 }
